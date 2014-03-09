@@ -1,6 +1,7 @@
 <?php
 session_start();
 var_dump($_POST);
+var_dump($_FILES);
 require_once('connection.php');
 function log_out()
 {
@@ -61,6 +62,22 @@ function register_validate($connection,$post)
 						$_SESSION['error'][$name]=$name.' should match with password you entered.';
 					}
 					break;
+				case 'file':
+					if ($_FILES['file']['error']==0) 
+					{
+						$targetpath='uploads/';
+						$filename=$_FILES['file']['name'];
+						$newfilepath=$targetpath.$filename;
+						if (file_exists($newfilepath)) 
+						{
+							$_SESSION['error']['file']=$filename.' already exits.';
+						}else
+						{
+						$newfile=move_uploaded_file($_FILES['file']['tmp_name'], $targetpath.$filename);
+						var_dump($newfile);
+						}
+					}
+					break;
 			}
 		}
 	}
@@ -69,8 +86,8 @@ function register_validate($connection,$post)
 		$_SESSION['success']='You are our member now.';
 		$salt=bin2hex(openssl_random_pseudo_bytes(22));
 		$password=crypt($post['password'],$salt);
-		$query="INSERT INTO users (first_name,last_name,email,birthdate,password,created_at,updated_at)
-		 VALUES ('".$post['first_name']."','".$post['last_name']."','".$post['email']."','".$birthdate."','".$password."',now(),now())";
+		$query="INSERT INTO users (first_name,last_name,email,birthdate,password,created_at,updated_at,file_path)
+		 VALUES ('".$post['first_name']."','".$post['last_name']."','".$post['email']."','".$birthdate."','".$password."',now(),now(),'".$newfilepath."')";
 		$result=mysqli_query($connection,$query);
 		var_dump($result); 
 		// $query1="SELECT id FROM users WHERE email=".$post['email'];
@@ -80,10 +97,10 @@ function register_validate($connection,$post)
 		// var_dump($row);
 		$user_id=mysqli_insert_id($connection);
 		$_SESSION['id']=$user_id;
-		header('Location: profile.php?id='.$user_id);
+		// header('Location: profile.php?id='.$user_id);
 	}else
 	{
-		header("Location: index_1.php");
+		// header("Location: index_1.php");
 	}
 }
 function log_in($connection,$post)

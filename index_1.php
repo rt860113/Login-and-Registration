@@ -1,6 +1,7 @@
 <?php
 session_start();
 var_dump($_SESSION);
+var_dump($_FILES);
 require_once('connection.php');
 ?>
 <html>
@@ -27,7 +28,7 @@ require_once('connection.php');
 	?>
 
 	<div class='register'>
-		<form action='process.php' method='post'>
+		<form action='process.php' method='post' enctype="multipart/form-data">
 			<p>Register Now!</p>
 			<input type='hidden' name='action' value='register'>
 			<input type='text' name='first_name' placeholder='First Name'>
@@ -36,6 +37,7 @@ require_once('connection.php');
 			<input type='text' name='birthdate' placeholder='Birthdate'>
 			<input type='text' name='password' placeholder='Password'>
 			<input type='text' name='confirm_password' placeholder='Retype Your Password'>
+			<input type="file" name='file'>
 			<input type='submit' value='Register'>
 		</form>
 	</div>
