@@ -1,7 +1,8 @@
 <?php
 session_start();
 var_dump($_POST);
-var_dump($_FILES);
+var_dump($_SESSION);
+// var_dump($_FILES);
 require_once('connection.php');
 function log_out()
 {
@@ -14,11 +15,11 @@ function register_validate($connection,$post)
 	{
 			
 		
-		if (empty($value)&&$name!='action') 
+		if (empty($value)&&$name!='action'&&$name!='file') 
 		{
 			$_SESSION['error'][$name]=$name.' is empty. Please fill it out.';	
 		}
-		elseif($name!='action')
+		else
 		{
 			switch ($name) 
 			{
@@ -62,23 +63,22 @@ function register_validate($connection,$post)
 						$_SESSION['error'][$name]=$name.' should match with password you entered.';
 					}
 					break;
-				case 'file':
-					if ($_FILES['file']['error']==0) 
-					{
-						$targetpath='uploads/';
-						$filename=$_FILES['file']['name'];
-						$newfilepath=$targetpath.$filename;
-						if (file_exists($newfilepath)) 
-						{
-							$_SESSION['error']['file']=$filename.' already exits.';
-						}else
-						{
-						$newfile=move_uploaded_file($_FILES['file']['tmp_name'], $targetpath.$filename);
-						var_dump($newfile);
-						}
-					}
-					break;
 			}
+		}
+	}
+	var_dump($_FILES);
+	if ($_FILES['file']['error']==0) 
+	{
+		$targetpath='uploads/';
+		$filename=$_FILES['file']['name'];
+		$newfilepath=$targetpath.$filename;
+		if (file_exists($newfilepath)) 
+		{
+			$_SESSION['error']['file']=$filename.' already exits.';
+		}else
+		{
+		$newfile=move_uploaded_file($_FILES['file']['tmp_name'], $targetpath.$filename);
+		var_dump($newfile);
 		}
 	}
 	if (!isset($_SESSION['error']))
@@ -97,10 +97,10 @@ function register_validate($connection,$post)
 		// var_dump($row);
 		$user_id=mysqli_insert_id($connection);
 		$_SESSION['id']=$user_id;
-		// header('Location: profile.php?id='.$user_id);
+		header('Location: profile.php?id='.$user_id);
 	}else
 	{
-		// header("Location: index_1.php");
+		header("Location: index_1.php");
 	}
 }
 function log_in($connection,$post)
