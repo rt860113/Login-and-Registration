@@ -39,7 +39,20 @@ function register_validate($connection,$post)
 					if (!filter_var($value,FILTER_VALIDATE_EMAIL))
 					{
 						$_SESSION['error'][$name]=$name.' is not in correct form.';
+					}else
+					{
+						$query_email="SELECT email FROM users";
+						$result_email=mysqli_query($connection,$query_email);
+						while ($row_email=mysqli_fetch_assoc($result_email)) 
+						{
+							if ($row_email['email']==$value) 
+							{
+								$_SESSION['error'][$name]='This email has already been used.';
+							}
+						}
 					}
+
+					
 					break;
 				case 'birthdate':
 					$t_birthdate=explode('/', $value);
@@ -87,7 +100,7 @@ function register_validate($connection,$post)
 		$salt=bin2hex(openssl_random_pseudo_bytes(22));
 		$password=crypt($post['password'],$salt);
 		$query="INSERT INTO users (first_name,last_name,email,birthdate,password,created_at,updated_at,file_path)
-		 VALUES ('".$post['first_name']."','".$post['last_name']."','".$post['email']."','".$birthdate."','".$password."',now(),now(),'".$newfilepath."')";
+		 VALUES ('".mysqli_real_escape_string($connection,$post['first_name'])."','".mysqli_real_escape_string($connection,$post['last_name'])."','".mysqli_real_escape_string($connection,$post['email'])."','".mysqli_real_escape_string($connection,$birthdate)."','".mysqli_real_escape_string($connection,$password)."',now(),now(),'".mysqli_real_escape_string($connection,$newfilepath)."')";
 		$result=mysqli_query($connection,$query);
 		var_dump($result); 
 		// $query1="SELECT id FROM users WHERE email=".$post['email'];
