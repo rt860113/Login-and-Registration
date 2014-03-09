@@ -1,5 +1,6 @@
 <?php
 session_start();
+var_dump($_POST);
 require_once('connection.php');
 function log_out()
 {
@@ -12,11 +13,11 @@ function register_validate($connection,$post)
 	{
 			
 		
-		if (empty($value)) 
+		if (empty($value)&&$name!='action') 
 		{
 			$_SESSION['error'][$name]=$name.' is empty. Please fill it out.';	
 		}
-		else
+		elseif($name!='action')
 		{
 			switch ($name) 
 			{
@@ -61,68 +62,98 @@ function register_validate($connection,$post)
 					}
 					break;
 			}
-			if (!isset($_SESSION['error']))
-			{
-				$salt=bin2hex(openssl_random_pseudo_bytes(22));
-				$password=crypt($post['password'],$salt);
-
-
-				$query="INSERT INTO users (first_name,last_name,email,birthdate,password)
-				 VALUES ('."$post['first_name']".','"$post['last_name']"','"$post['email']"','."$password".','."$birthdate".')";
-				$result=mysqli_query($connection,$query);
-				var_dump($result); 
-				$query1="SELECT id FROM users WHERE email=".$post['email'];
-				$result1=mysqli_query($connection,$query1);
-				var_dump($result1);
-				$row=mysqli_fetch_assoc($result1);
-				var_dump($row);
-				// header('Location: profile.php?id='.$row['id']);
-			}
 		}
+	}
+	if (!isset($_SESSION['error']))
+	{
+		$_SESSION['success']='You are our member now.';
+		$salt=bin2hex(openssl_random_pseudo_bytes(22));
+		$password=crypt($post['password'],$salt);
+		$query="INSERT INTO users (first_name,last_name,email,birthdate,password,created_at,updated_at)
+		 VALUES ('".$post['first_name']."','".$post['last_name']."','".$post['email']."','".$birthdate."','".$password."',now(),now())";
+		$result=mysqli_query($connection,$query);
+		var_dump($result); 
+		// $query1="SELECT id FROM users WHERE email=".$post['email'];
+		// $result1=mysqli_query($connection,$query1);
+		// var_dump($result1);
+		// $row=mysqli_fetch_assoc($result1);
+		// var_dump($row);
+		$user_id=mysqli_insert_id($connection);
+		$_SESSION['id']=$user_id;
+		header('Location: profile.php?id='.$user_id);
+	}else
+	{
+		header("Location: index_1.php");
 	}
 }
 function log_in($connection,$post)
 {
+	
 	foreach ($post as $name => $value) 
 	{
 	
-		if (empty($value)) 
+		if (empty($value)&&$name!='action') 
 		{
-			$_SESSION['error'][$name]=$name.'Please input your information.';
-		}else
+			$_SESSION['error'][$name]=$name.':Your input information is empty. Login in failed.';
+		}elseif($name!='action')
 		{
-			switch ($name) {
-				case 'email':
-					$query="SELECT id,email FROM users WHERE email=".$value;
+			$query="SELECT id,email,password FROM users WHERE email='".$post['email']."'";
 					$result=mysqli_query($connection,$query);
+					var_dump($result);
 					$row=mysqli_fetch_assoc($result);
-					if ($row['email']==$value) 
-					{
-						$_SESSION;
-					}else
-					{
-						$_SESSION['error'][$name]='Wrong email address.';
-					}
-					break;
-				case 'password':
-					$query="SELECT"
-					if (condition) {
-						# code...
-					}
-					break;
-				
-				default:
-					# code...
-					break;
+					var_dump($row);
+			if (empty($row))
+			{
+				$_SESSION['error']['empty']='Your information is not in the database.';
+			}
+			else
+			{
+				switch ($name) 
+				{
+					case 'email':
+						
+						if (!$row['email']==$value) 
+						{
+							$_SESSION['error'][$name]=$name.': Wrong email address. Login failed.';
+						}
+						break;
+					case 'password':
+						if ($row['password']!=crypt($value,$row['password']))
+						{
+							$_SESSION['error'][$name]=$name.': Wrong password. Login failed.';
+						}
+						break;
+					
+				}
 			}
 		}
-
+		
+	}
+	if (!isset($_SESSION['error'])) 
+	{
+		$_SESSION['success']='Log in successfully.';
+		$_SESSION['id']=$row['id'];
+		header('Location: profile.php?id='.$row['id']);
+	}else
+	{
+		header("Location:index_1.php");
 	}
 }
 
 
-
-
+if (isset($_POST['action'])&&$_POST['action']=='register') 
+{
+	register_validate($connection,$_POST);
+}
+if (isset($_POST['action'])&&$_POST['action']=='login') 
+{
+	log_in($connection,$_POST);
+}
+if (isset($_POST['action'])&&$_POST['action']=='log_out') 
+{
+	log_out();
+	header('Location:index_1.php');
+}
 
 
 

@@ -1,5 +1,6 @@
 <?php
 session_start();
+var_dump($_SESSION);
 require_once('connection.php');
 ?>
 <html>
@@ -8,6 +9,23 @@ require_once('connection.php');
 	<title>Login and Registration</title>
 </head>
 <body>
+	<?php
+		if (isset($_SESSION['error'])) 
+		{
+			foreach ($_SESSION['error'] as $name => $value) 
+			{?>
+			
+			<p><?= $value;?></p>
+			<?php }
+		}
+	?>
+	<?php
+		if (isset($_SESSION['success'])) 
+		{?>
+			<p><?= $_SESSION['success'];?></p>
+		<?php }
+	?>
+
 	<div class='register'>
 		<form action='process.php' method='post'>
 			<p>Register Now!</p>
@@ -32,6 +50,9 @@ require_once('connection.php');
 	</div>
 </body>
 </html>
+<?php 
+	$_SESSION=array();
+?>
 <style type="text/css">
 	div
 	{
